@@ -224,3 +224,145 @@ You need to make an account on https://registry.comfy.org and create an API key 
 
 A Github action will run on every git push. You can also run the Github action manually. Full instructions [here](https://docs.comfy.org/registry/publishing). Join our [discord](https://discord.com/invite/comfyorg) if you have any questions!
 
+## 🚀 Azure OpenAI 图像编辑功能
+
+### 新增功能
+
+**✅ 增强的 Azure OpenAI 集成**
+- 使用最新的 Azure OpenAI SDK (2025-04-01-preview)
+- 改进的错误处理和日志记录
+- 模块化的配置管理
+- 类型安全的代码实现
+
+**✅ 高级图像处理**
+- 智能图像格式转换
+- 批量图像处理支持
+- 图像尺寸验证和调整
+- 优化的内存使用
+
+**✅ 企业级功能**
+- 全面的错误处理和重试机制
+- 详细的日志记录和监控
+- 安全的凭证管理
+- 配置验证和健康检查
+
+### 环境变量配置
+
+项目支持多种环境变量格式，按优先级排序：
+
+```bash
+# Azure OpenAI 配置
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+AZURE_OPENAI_API_KEY=your-api-key
+AZURE_OPENAI_API_VERSION=2025-04-01-preview  # 可选
+AZURE_OPENAI_DEPLOYMENT=gpt-image-1         # 可选
+
+# 或者使用简化格式
+AZURE_ENDPOINT=https://your-resource.openai.azure.com
+AZURE_API_KEY=your-api-key
+
+# OpenAI 配置
+OPENAI_API_KEY=your-openai-api-key
+```
+
+### 使用示例
+
+#### 基本图像编辑
+
+```python
+from src.openai_image_api.nodes import OpenAIImageAPI
+import torch
+
+# 创建节点实例
+node = OpenAIImageAPI()
+
+# 准备输入图像 (假设是 ComfyUI 张量格式)
+# image_tensor = your_image_tensor
+
+# 进行图像编辑
+result = node.generate_image(
+    prompt="make it in the style of Studio Ghibli",
+    model="gpt-image-1",
+    size="1024x1024",
+    quality="high",
+    provider="azure",
+    image=image_tensor,
+    azure_endpoint="https://your-resource.openai.azure.com",
+    azure_api_version="2025-04-01-preview",
+    azure_deployment="gpt-image-1"
+)
+
+edited_image = result[0]
+```
+
+#### 使用环境变量
+
+```python
+# 设置环境变量后，无需提供额外参数
+result = node.generate_image(
+    prompt="convert to a cyberpunk style with neon lights",
+    model="gpt-image-1", 
+    size="1024x1024",
+    quality="high",
+    provider="azure",
+    image=image_tensor
+)
+```
+
+#### 运行示例脚本
+
+```bash
+# 设置环境变量
+export AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+export AZURE_OPENAI_API_KEY=your-api-key
+
+# 运行示例
+python examples/azure_image_edit_example.py
+```
+
+### 配置管理
+
+项目使用模块化配置管理：
+
+```python
+from src.openai_image_api.azure_config import AzureConfigManager
+
+# 创建配置
+config = AzureConfigManager.create_config(
+    endpoint="https://your-resource.openai.azure.com",
+    api_key="your-api-key",
+    api_version="2025-04-01-preview",
+    deployment="gpt-image-1"
+)
+
+# 验证配置
+AzureConfigManager.validate_config(config)
+
+# 获取配置摘要（隐藏敏感信息）
+summary = AzureConfigManager.get_config_summary(config)
+print(summary)
+```
+
+### 图像处理工具
+
+内置的图像处理工具：
+
+```python
+from src.openai_image_api.image_utils import ImageProcessor
+from PIL import Image
+import torch
+
+# PIL 图像转张量
+pil_image = Image.open("input.jpg")
+tensor = ImageProcessor.pil_to_tensor(pil_image)
+
+# 张量转 PIL 图像
+pil_image = ImageProcessor.tensor_to_pil(tensor.squeeze(0))
+
+# 为 API 准备图像数据
+images = ImageProcessor.prepare_images_for_api(tensor.squeeze(0))
+
+# Base64 转张量
+tensor = ImageProcessor.base64_to_tensor(base64_string)
+```
+

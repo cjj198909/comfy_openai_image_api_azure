@@ -101,3 +101,26 @@ cookiecutter-pypackage-env/
 # vscode settings
 .history/
 *.code-workspace
+
+# Azure OpenAI specific
+*.log
+azure_image_edit.log
+generated_image_*.png
+edited_image_*.png
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local configuration
+.env.local
+.env.*.local
