@@ -4,7 +4,16 @@ import numpy as np
 import torch
 from PIL import Image
 import io
-from openai import OpenAI
+import os
+from openai import OpenAI, AzureOpenAI
+
+# Try to load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # dotenv is optional, continue without it
+    pass
 
 # ANSI escape codes for colors
 RED = "\033[91m"
@@ -28,16 +37,29 @@ class OpenAIImageAPI:
                     "multiline": True,
                     "default": "A beautiful image"
                 }),
+                "model": (["gpt-image-1"],),
+                "size": (["1024x1024", "1536x1024", "1024x1536"],),
+                "quality": (["low", "medium", "high"],),
+                "provider": (["openai", "azure"],),
+            },
+            "optional": {
+                "image": ("IMAGE",),
                 "api_key": ("STRING", {
                     "multiline": False,
                     "default": ""
                 }),
-                "model": (["gpt-image-1"],),
-                "size": (["1024x1024", "1536x1024", "1024x1536"],),
-                "quality": (["low", "medium", "high"],),
-            },
-            "optional": {
-                "image": ("IMAGE",),
+                "azure_endpoint": ("STRING", {
+                    "multiline": False,
+                    "default": ""
+                }),
+                "azure_api_version": ("STRING", {
+                    "multiline": False,
+                    "default": "2024-12-01-preview"
+                }),
+                "azure_deployment": ("STRING", {
+                    "multiline": False,
+                    "default": "gpt-image-1"
+                }),
             }
         }
 
@@ -45,20 +67,43 @@ class OpenAIImageAPI:
     FUNCTION = "generate_image"
     CATEGORY = "image/OpenAI"
 
-    def generate_image(self, prompt, api_key, model, size, quality, image=None):
-        # print(f"{RED}generate_image: {prompt}, {api_key}, {model}, {size}, {quality}, {image}{RESET}")
+    def generate_image(self, prompt, model, size, quality, provider, image=None, 
+                      api_key=None, azure_endpoint=None, azure_api_version=None, azure_deployment=None):
+        # print(f"{RED}generate_image: {prompt}, {model}, {size}, {quality}, {provider}{RESET}")
 
-        if api_key == "":
-            raise RuntimeError("API key is empty")
-        
-        # Initialize OpenAI client
-        client = OpenAI(api_key=api_key)
+        # Initialize client based on provider
+        if provider == "azure":
+            # For Azure OpenAI, use environment variables or provided parameters
+            endpoint = azure_endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")
+            key = api_key or os.getenv("AZURE_OPENAI_API_KEY")
+            api_version = azure_api_version or os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
+            deployment = azure_deployment or os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-image-1")
+            
+            if not endpoint:
+                raise RuntimeError("Azure OpenAI endpoint is required. Set AZURE_OPENAI_ENDPOINT environment variable or provide azure_endpoint parameter.")
+            if not key:
+                raise RuntimeError("Azure OpenAI API key is required. Set AZURE_OPENAI_API_KEY environment variable or provide api_key parameter.")
+            
+            client = AzureOpenAI(
+                api_key=key,
+                api_version=api_version,
+                azure_endpoint=endpoint
+            )
+            model_name = deployment  # Use deployment name for Azure
+        else:
+            # For OpenAI, use api_key or environment variable
+            key = api_key or os.getenv("OPENAI_API_KEY")
+            if not key:
+                raise RuntimeError("OpenAI API key is required. Set OPENAI_API_KEY environment variable or provide api_key parameter.")
+            
+            client = OpenAI(api_key=key)
+            model_name = model  # Use model name for OpenAI
         
         try:
             if image is None or (isinstance(image, torch.Tensor) and image.numel() == 0):
                 # If no input image, use generate API
                 result = client.images.generate(
-                    model=model,
+                    model=model_name,
                     prompt=prompt,
                     size=size,
                     quality=quality
@@ -91,7 +136,7 @@ class OpenAIImageAPI:
                 
                 # Call edit API
                 result = client.images.edit(
-                    model=model,
+                    model=model_name,
                     image=images,
                     prompt=prompt,
                     size=size,
@@ -116,7 +161,7 @@ class OpenAIImageAPI:
             
         except Exception as e:
             error_message = f"{str(e)}"
-            print(f"{RED}Error calling OpenAI Image API: {error_message}{RESET}")
+            print(f"{RED}Error calling Image API: {error_message}{RESET}")
             # Raise an exception to signal the error to the ComfyUI frontend
             raise RuntimeError(error_message) from e
 
@@ -128,5 +173,5 @@ NODE_CLASS_MAPPINGS = {
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "OpenAI Image API": "OpenAI Image API with gpt-image-1"
+    "OpenAI Image API": "OpenAI/Azure OpenAI Image API with gpt-image-1"
 }

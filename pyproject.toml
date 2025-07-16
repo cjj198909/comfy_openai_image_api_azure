@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "comfy_openai_image_api"
 version = "0.0.4"
-description = "This custom node uses OpenAI Image API to generate image (if no input image is provided) or edit image (if input image is provided) with the latest gpt-image-1 model. To use it, you will need to provide your OpenAI API key. This makes the node to be friendly for situations where ComfyUi serves as API server, because you don't have to login like the official OpenAI GPT Image 1 node does."
+description = "A ComfyUI node that provides access to OpenAI's image generation and editing capabilities, including support for gpt-image-1 model with both OpenAI and Azure OpenAI providers."
 authors = [
   {name = "Xin", email = "unicough.github@gmail.com"}
 ]
@@ -13,7 +13,8 @@ readme = "README.md"
 license = {text = "MIT license"}
 classifiers = []
 dependencies = [
-
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -34,7 +35,7 @@ Repository = "https://github.com/unicough/comfy_openai_image_api.git"
 
 [tool.comfy]
 PublisherId = "unicough"
-DisplayName = "OpenAI Image API"
+DisplayName = "OpenAI/Azure OpenAI Image API"
 Icon = ""
 
 [tool.setuptools.package-data]

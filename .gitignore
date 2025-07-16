@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Environment variables
+.env
+
 # OSX useful to ignore
 *.DS_Store
 .AppleDouble
