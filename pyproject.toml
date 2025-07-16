@@ -3,11 +3,12 @@ requires = ["setuptools>=70.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "comfy_openai_image_api"
+name = "comfy_openai_image_api_azure"
 version = "0.0.4"
 description = "A ComfyUI node that provides access to OpenAI's image generation and editing capabilities, including support for gpt-image-1 model with both OpenAI and Azure OpenAI providers."
 authors = [
-  {name = "Xin", email = "unicough.github@gmail.com"}
+  {name = "Jiajun Chen", email = "cjj198909@github.com"},
+  {name = "Xin (Original Author)", email = "unicough.github@gmail.com"}
 ]
 readme = "README.md"
 license = {text = "MIT license"}
@@ -28,9 +29,10 @@ dev = [
 ]
 
 [project.urls]
-bugs = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}/issues"
-homepage = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}"
-Repository = "https://github.com/unicough/comfy_openai_image_api.git"
+bugs = "https://github.com/cjj198909/comfy_openai_image_api_azure/issues"
+homepage = "https://github.com/cjj198909/comfy_openai_image_api_azure"
+Repository = "https://github.com/cjj198909/comfy_openai_image_api_azure.git"
+Original = "https://github.com/unicough/comfy_openai_image_api"
 
 
 [tool.comfy]
